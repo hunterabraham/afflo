@@ -114,6 +114,8 @@ export const partners = createTable("partner", (d) => ({
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: d.varchar({ length: 255 }).notNull(),
+  domain: d.varchar({ length: 255 }).notNull(),
+  shopify_secret: d.varchar({ length: 1024 }).notNull(),
   updated_at: d
     .timestamp({ mode: "date", withTimezone: false })
     .$onUpdate(() => new Date())
