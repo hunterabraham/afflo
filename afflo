@@ -1,0 +1,6 @@
+#!/bin/bash
+# Afflo CLI wrapper - makes it easier to run commands from project root
+# Usage: ./afflo <command>
+
+"$(dirname "$0")/cli/afflo_cli.sh" "$@"
+

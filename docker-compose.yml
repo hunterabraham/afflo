@@ -20,6 +20,58 @@ services:
       timeout: 5s
       retries: 5
 
+  # Database Migrations (runs db:push to sync schema)
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    container_name: afflo-migrate
+    working_dir: /app
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SKIP_ENV_VALIDATION=1
+    volumes:
+      - ./src:/app/src:ro
+      - ./drizzle.config.ts:/app/drizzle.config.ts:ro
+      - ./package.json:/app/package.json:ro
+    command: npm run db:push
+    depends_on:
+      database:
+        condition: service_healthy
+    profiles:
+      - dev
+
+  # Database Seeder (run with: docker-compose up seed)
+  seed:
+    image: postgres:16-alpine
+    container_name: afflo-seed
+    environment:
+      PGHOST: database
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: ${DB_PASSWORD:-postgres}
+      PGDATABASE: ${DB_NAME:-afflo}
+    volumes:
+      - ./seed.sql:/seed.sql:ro
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...';
+        until pg_isready -h database -U postgres; do
+          sleep 1;
+        done;
+        echo 'Database is ready. Running seed script...';
+        psql -f /seed.sql;
+        echo 'Seed script completed!';
+      "
+    depends_on:
+      database:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    profiles:
+      - dev
+
   # Next.js Application with tRPC
   app:
     build:

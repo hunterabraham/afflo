@@ -127,6 +127,10 @@ export const partners = createTable("partner", (d) => ({
   deleted_at: d.timestamp({ mode: "date", withTimezone: false }),
 }));
 
+export const partnersRelations = relations(partners, ({ many }) => ({
+  affiliatesToPartners: many(affiliatesToPartners),
+}));
+
 /**
  * Affiliates are the people who sell product for a partner. They are
  * explicitly NOT linked to a partner because they could sell with multiple.
@@ -152,9 +156,56 @@ export const affiliates = createTable("affiliate", (d) => ({
   deleted_at: d.timestamp({ mode: "date", withTimezone: false }),
 }));
 
-export const affiliatesRelations = relations(affiliates, ({ one }) => ({
+export const affiliatesRelations = relations(affiliates, ({ one, many }) => ({
   user: one(users, { fields: [affiliates.user_id], references: [users.id] }),
+  affiliatesToPartners: many(affiliatesToPartners),
 }));
+
+/**
+ * Junction table for the many-to-many relationship between affiliates and partners.
+ * This allows affiliates to work with multiple partners and partners to have multiple affiliates.
+ */
+export const affiliatesToPartners = createTable(
+  "affiliate_to_partner",
+  (d) => ({
+    affiliate_id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => affiliates.id),
+    partner_id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => partners.id),
+    created_at: d
+      .timestamp({ mode: "date", withTimezone: false })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updated_at: d
+      .timestamp({ mode: "date", withTimezone: false })
+      .$onUpdate(() => new Date())
+      .notNull(),
+    deleted_at: d.timestamp({ mode: "date", withTimezone: false }),
+  }),
+  (t) => [
+    primaryKey({ columns: [t.affiliate_id, t.partner_id] }),
+    index("affiliate_to_partner_affiliate_idx").on(t.affiliate_id),
+    index("affiliate_to_partner_partner_idx").on(t.partner_id),
+  ],
+);
+
+export const affiliatesToPartnersRelations = relations(
+  affiliatesToPartners,
+  ({ one }) => ({
+    affiliate: one(affiliates, {
+      fields: [affiliatesToPartners.affiliate_id],
+      references: [affiliates.id],
+    }),
+    partner: one(partners, {
+      fields: [affiliatesToPartners.partner_id],
+      references: [partners.id],
+    }),
+  }),
+);
 
 /**
  * Affiliate events are a generic way of recording arbitrary events about an affiliate.

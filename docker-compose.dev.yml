@@ -20,3 +20,14 @@ services:
       - /app/node_modules
       - /app/.next
     command: npm run dev
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  # Enable migrate service in dev (remove profile restriction)
+  migrate:
+    profiles: []
+
+  # Enable seed service in dev (remove profile restriction)
+  seed:
+    profiles: []
