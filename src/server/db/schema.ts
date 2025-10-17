@@ -10,27 +10,6 @@ import { type AdapterAccount } from "next-auth/adapters";
  */
 export const createTable = pgTableCreator((name) => `afflo_${name}`);
 
-export const posts = createTable(
-  "post",
-  (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    name: d.varchar({ length: 256 }),
-    createdById: d
-      .varchar({ length: 255 })
-      .notNull()
-      .references(() => users.id),
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
-  }),
-  (t) => [
-    index("created_by_idx").on(t.createdById),
-    index("name_idx").on(t.name),
-  ],
-);
-
 export const users = createTable("user", (d) => ({
   id: d
     .varchar({ length: 255 })
@@ -46,6 +25,15 @@ export const users = createTable("user", (d) => ({
     })
     .default(sql`CURRENT_TIMESTAMP`),
   image: d.varchar({ length: 255 }),
+  updated_at: d
+    .timestamp({ mode: "date", withTimezone: false })
+    .$onUpdate(() => new Date())
+    .notNull(),
+  created_at: d
+    .timestamp({ mode: "date", withTimezone: false })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  deleted_at: d.timestamp({ mode: "date", withTimezone: false }),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -69,6 +57,15 @@ export const accounts = createTable(
     scope: d.varchar({ length: 255 }),
     id_token: d.text(),
     session_state: d.varchar({ length: 255 }),
+    updated_at: d
+      .timestamp({ mode: "date", withTimezone: false })
+      .$onUpdate(() => new Date())
+      .notNull(),
+    created_at: d
+      .timestamp({ mode: "date", withTimezone: false })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    deleted_at: d.timestamp({ mode: "date", withTimezone: false }),
   }),
   (t) => [
     primaryKey({ columns: [t.provider, t.providerAccountId] }),
@@ -105,4 +102,101 @@ export const verificationTokens = createTable(
     expires: d.timestamp({ mode: "date", withTimezone: true }).notNull(),
   }),
   (t) => [primaryKey({ columns: [t.identifier, t.token] })],
+);
+
+/**
+ * Partners are the entities that we partner with. They are the companies
+ * that use our platform to manage their affiliates.
+ */
+export const partners = createTable("partner", (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: d.varchar({ length: 255 }).notNull(),
+  updated_at: d
+    .timestamp({ mode: "date", withTimezone: false })
+    .$onUpdate(() => new Date())
+    .notNull(),
+  created_at: d
+    .timestamp({ mode: "date", withTimezone: false })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  deleted_at: d.timestamp({ mode: "date", withTimezone: false }),
+}));
+
+/**
+ * Affiliates are the people who sell product for a partner. They are
+ * explicitly NOT linked to a partner because they could sell with multiple.
+ * We scope events and all surrounding data to a partner, however.
+ */
+export const affiliates = createTable("affiliate", (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  user_id: d
+    .varchar({ length: 255 })
+    .notNull()
+    .references(() => users.id),
+  updated_at: d
+    .timestamp({ mode: "date", withTimezone: false })
+    .$onUpdate(() => new Date())
+    .notNull(),
+  created_at: d
+    .timestamp({ mode: "date", withTimezone: false })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  deleted_at: d.timestamp({ mode: "date", withTimezone: false }),
+}));
+
+export const affiliatesRelations = relations(affiliates, ({ one }) => ({
+  user: one(users, { fields: [affiliates.user_id], references: [users.id] }),
+}));
+
+/**
+ * Affiliate events are a generic way of recording arbitrary events about an affiliate.
+ * For example, you might want to record an event when an affiliate makes a sale,
+ * we seed an affiliate with product, or they make a post. This creates a ledger
+ * of all affiliate events. Affiliate events should be CREATE ONLY. We may
+ * want to accumulate data over time and query it from incremental materializations.
+ */
+export const affiliate_events = createTable("affiliate_event", (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  affiliate_id: d
+    .varchar({ length: 255 })
+    .notNull()
+    .references(() => affiliates.id),
+  partner_id: d
+    .varchar({ length: 255 })
+    .notNull()
+    .references(() => partners.id),
+  type: d.varchar({ length: 255 }).notNull(),
+  data: d.jsonb().notNull(),
+  created_at: d
+    .timestamp({ mode: "date", withTimezone: false })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updated_at: d
+    .timestamp({ mode: "date", withTimezone: false })
+    .$onUpdate(() => new Date())
+    .notNull(),
+  deleted_at: d.timestamp({ mode: "date", withTimezone: false }),
+}));
+
+export const affiliate_eventsRelations = relations(
+  affiliate_events,
+  ({ one }) => ({
+    affiliate: one(affiliates, {
+      fields: [affiliate_events.affiliate_id],
+      references: [affiliates.id],
+    }),
+    partner: one(partners, {
+      fields: [affiliate_events.partner_id],
+      references: [partners.id],
+    }),
+  }),
 );
