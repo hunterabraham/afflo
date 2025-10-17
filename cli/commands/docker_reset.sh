@@ -79,3 +79,5 @@ docker_reset() {
     echo "   • View logs: docker logs afflo-postgres"
 }
 
+# Execute the function
+docker_reset
