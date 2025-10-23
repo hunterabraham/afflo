@@ -29,8 +29,8 @@ services:
     container_name: afflo-migrate
     working_dir: /app
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - SKIP_ENV_VALIDATION=1
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-postgres}@database:5432/${DB_NAME:-afflo}
+      SKIP_ENV_VALIDATION: 1
     volumes:
       - ./src:/app/src:ro
       - ./drizzle.config.ts:/app/drizzle.config.ts:ro
@@ -39,8 +39,6 @@ services:
     depends_on:
       database:
         condition: service_healthy
-    profiles:
-      - dev
 
   # Database Seeder (run with: docker-compose up seed)
   seed:
@@ -69,8 +67,6 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
-    profiles:
-      - dev
 
   # Next.js Application with tRPC
   app:
@@ -82,11 +78,11 @@ services:
     ports:
       - "${APP_PORT:-3000}:3000"
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - AUTH_SECRET=${AUTH_SECRET}
-      - AUTH_DISCORD_ID=${AUTH_DISCORD_ID}
-      - AUTH_DISCORD_SECRET=${AUTH_DISCORD_SECRET}
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-postgres}@database:5432/${DB_NAME:-afflo}
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_DISCORD_ID: ${AUTH_DISCORD_ID}
+      AUTH_DISCORD_SECRET: ${AUTH_DISCORD_SECRET}
     depends_on:
       database:
         condition: service_healthy

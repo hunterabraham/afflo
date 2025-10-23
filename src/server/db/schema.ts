@@ -18,6 +18,7 @@ export const users = createTable("user", (d) => ({
     .$defaultFn(() => crypto.randomUUID()),
   name: d.varchar({ length: 255 }),
   email: d.varchar({ length: 255 }).notNull(),
+  password: d.varchar({ length: 255 }),
   emailVerified: d
     .timestamp({
       mode: "date",
@@ -129,6 +130,38 @@ export const partners = createTable("partner", (d) => ({
 
 export const partnersRelations = relations(partners, ({ many }) => ({
   affiliatesToPartners: many(affiliatesToPartners),
+}));
+
+export const admins = createTable("admin", (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  user_id: d
+    .varchar({ length: 255 })
+    .notNull()
+    .references(() => users.id),
+  partner_id: d
+    .varchar({ length: 255 })
+    .notNull()
+    .references(() => partners.id),
+  updated_at: d
+    .timestamp({ mode: "date", withTimezone: false })
+    .$onUpdate(() => new Date())
+    .notNull(),
+  created_at: d
+    .timestamp({ mode: "date", withTimezone: false })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  deleted_at: d.timestamp({ mode: "date", withTimezone: false }),
+}));
+
+export const adminsRelations = relations(admins, ({ one }) => ({
+  user: one(users, { fields: [admins.user_id], references: [users.id] }),
+  partner: one(partners, {
+    fields: [admins.partner_id],
+    references: [partners.id],
+  }),
 }));
 
 /**

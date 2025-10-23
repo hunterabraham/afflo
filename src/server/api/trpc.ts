@@ -46,6 +46,14 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
+    // Log errors to console
+    console.error(`[TRPC] Error in ${error.path}:`, {
+      message: error.message,
+      code: error.code,
+      cause: error.cause,
+      timestamp: new Date().toISOString(),
+    });
+
     return {
       ...shape,
       data: {
@@ -84,8 +92,14 @@ export const createTRPCRouter = t.router;
  * You can remove this if you don't like it, but it can help catch unwanted waterfalls by simulating
  * network latency that would occur in production but not in local development.
  */
-const timingMiddleware = t.middleware(async ({ next, path }) => {
+const timingMiddleware = t.middleware(async ({ next, path, type, input }) => {
   const start = Date.now();
+
+  // Log the incoming request
+  console.log(`[TRPC] ${type.toUpperCase()} ${path}`, {
+    input: process.env.NODE_ENV === "development" ? input : "[HIDDEN]",
+    timestamp: new Date().toISOString(),
+  });
 
   if (t._config.isDev) {
     // artificial delay in dev
@@ -96,7 +110,14 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
   const result = await next();
 
   const end = Date.now();
-  console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
+  const duration = end - start;
+
+  // Log the result
+  console.log(`[TRPC] ${type.toUpperCase()} ${path} completed`, {
+    duration: `${duration}ms`,
+    success: !(result instanceof Error),
+    timestamp: new Date().toISOString(),
+  });
 
   return result;
 });

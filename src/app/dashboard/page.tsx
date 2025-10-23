@@ -1,16 +1,23 @@
-import { AppSidebar } from "~/components/app-sidebar"
-import { ChartAreaInteractive } from "~/components/chart-area-interactive"
-import { DataTable } from "~/components/data-table"
-import { SectionCards } from "~/components/section-cards"
-import { SiteHeader } from "~/components/site-header"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "~/components/ui/sidebar"
+import { auth } from "~/server/auth";
+import { redirect } from "next/navigation";
+import { AppSidebar } from "~/components/app-sidebar";
+import { ChartAreaInteractive } from "~/components/chart-area-interactive";
+import { DataTable } from "~/components/data-table";
+import { SectionCards } from "~/components/section-cards";
+import { SiteHeader } from "~/components/site-header";
+import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
+import { Button } from "~/components/ui/button";
+import { signOut } from "~/server/auth";
+import { TRPCTestComponent } from "~/components/trpc-test";
+import data from "../data.json";
 
-import data from "./data.json"
+export default async function DashboardPage() {
+  const session = await auth();
 
-export default function Page() {
+  if (!session) {
+    redirect("/auth/login");
+  }
+
   return (
     <SidebarProvider
       style={
@@ -26,6 +33,26 @@ export default function Page() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <div className="px-4 lg:px-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h1 className="text-2xl font-bold">
+                    Welcome back, {session.user?.name || session.user?.email}!
+                  </h1>
+                  <form
+                    action={async () => {
+                      "use server";
+                      await signOut({ redirectTo: "/auth/login" });
+                    }}
+                  >
+                    <Button variant="outline" type="submit">
+                      Sign Out
+                    </Button>
+                  </form>
+                </div>
+                <div className="mb-6">
+                  <TRPCTestComponent />
+                </div>
+              </div>
               <SectionCards />
               <div className="px-4 lg:px-6">
                 <ChartAreaInteractive />
@@ -36,5 +63,5 @@ export default function Page() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
