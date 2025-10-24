@@ -19,36 +19,21 @@ import { toast } from "sonner";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const router = useRouter();
 
   // For now, we'll show OAuth buttons by default
   // In production, you'd want to check server-side or use a different approach
   const hasGoogleAuth = true; // This should be determined server-side
-  const hasShopifyAuth = true; // This should be determined server-side
 
   const handleOAuthSignIn = async (provider: string) => {
     setIsLoading(true);
     try {
-      const result = await signIn(provider, {
+      await signIn(provider, {
         callbackUrl: "/auth/setup-company",
-        redirect: false,
+        redirect: true,
       });
-
-      if (result?.error) {
-        toast.error("Authentication failed. Please try again.");
-      } else if (result?.ok) {
-        // Check if user needs to complete company setup
-        const session = await getSession();
-        if (session?.user) {
-          router.push("/auth/setup-company");
-        } else {
-          router.push("/dashboard");
-        }
-      }
     } catch (error) {
       toast.error("An error occurred during authentication.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -58,20 +43,15 @@ export default function LoginPage() {
     try {
       const email = formData.get("email") as string;
       const password = formData.get("password") as string;
-
-      const result = await signIn("credentials", {
+      // Use NextAuth's built-in redirect functionality
+      await signIn("credentials", {
         email,
         password,
         callbackUrl: "/dashboard",
-        redirect: false,
+        redirect: true,
       });
-
-      if (result?.error) {
-        toast.error("Invalid credentials. Please try again.");
-      } else if (result?.ok) {
-        router.push("/dashboard");
-      }
     } catch (error) {
+      console.error("Sign in error:", error);
       toast.error("An error occurred during sign in.");
     } finally {
       setIsLoading(false);
@@ -100,20 +80,12 @@ export default function LoginPage() {
       }
 
       // Sign in the user
-      const result = await signIn("credentials", {
+      await signIn("credentials", {
         email,
         password,
         callbackUrl: "/auth/setup-company",
-        redirect: false,
+        redirect: true,
       });
-
-      if (result?.error) {
-        toast.error(
-          "Account created but sign in failed. Please try signing in manually.",
-        );
-      } else if (result?.ok) {
-        router.push("/auth/setup-company");
-      }
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to create account",
@@ -151,7 +123,7 @@ export default function LoginPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* OAuth Buttons - Only show if providers are configured */}
-                {(hasGoogleAuth || hasShopifyAuth) && (
+                {hasGoogleAuth && (
                   <>
                     <div className="space-y-2">
                       {hasGoogleAuth && (
@@ -180,24 +152,6 @@ export default function LoginPage() {
                             />
                           </svg>
                           Continue with Google
-                        </Button>
-                      )}
-                      {hasShopifyAuth && (
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          onClick={() => handleOAuthSignIn("shopify")}
-                          disabled={isLoading}
-                        >
-                          <svg
-                            className="mr-2 h-4 w-4"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                          >
-                            <path d="M15.337 23.979c-.372 0-.657-.123-.857-.37-.2-.246-.3-.573-.3-.97 0-.396.1-.723.3-.97.2-.246.485-.37.857-.37.372 0 .657.124.857.37.2.247.3.574.3.97 0 .397-.1.724-.3.97-.2.246-.485.37-.857.37zm-9.65 0c-.372 0-.657-.123-.857-.37-.2-.246-.3-.573-.3-.97 0-.396.1-.723.3-.97.2-.246.485-.37.857-.37.372 0 .657.124.857.37.2.247.3.574.3.97 0 .397-.1.724-.3.97-.2.246-.485.37-.857.37z" />
-                            <path d="M22.67 6.33c-.246 0-.456.082-.63.246-.174.164-.26.37-.26.62 0 .25.086.456.26.62.174.164.384.246.63.246.246 0 .456-.082.63-.246.174-.164.26-.37.26-.62 0-.25-.086-.456-.26-.62-.174-.164-.384-.246-.63-.246z" />
-                          </svg>
-                          Continue with Shopify
                         </Button>
                       )}
                     </div>
@@ -237,8 +191,13 @@ export default function LoginPage() {
                       required
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Signing in..." : "Sign In"}
+                  <Button
+                    isLoading={isLoading}
+                    type="submit"
+                    className="w-full"
+                    disabled={isLoading}
+                  >
+                    Sign In
                   </Button>
                 </form>
               </CardContent>
@@ -255,7 +214,7 @@ export default function LoginPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* OAuth Buttons - Only show if providers are configured */}
-                {(hasGoogleAuth || hasShopifyAuth) && (
+                {hasGoogleAuth && (
                   <>
                     <div className="space-y-2">
                       {hasGoogleAuth && (
@@ -284,24 +243,6 @@ export default function LoginPage() {
                             />
                           </svg>
                           Continue with Google
-                        </Button>
-                      )}
-                      {hasShopifyAuth && (
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          onClick={() => handleOAuthSignIn("shopify")}
-                          disabled={isLoading}
-                        >
-                          <svg
-                            className="mr-2 h-4 w-4"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                          >
-                            <path d="M15.337 23.979c-.372 0-.657-.123-.857-.37-.2-.246-.3-.573-.3-.97 0-.396.1-.723.3-.97.2-.246.485-.37.857-.37.372 0 .657.124.857.37.2.247.3.574.3.97 0 .397-.1.724-.3.97-.2.246-.485.37-.857.37zm-9.65 0c-.372 0-.657-.123-.857-.37-.2-.246-.3-.573-.3-.97 0-.396.1-.723.3-.97.2-.246.485-.37.857-.37.372 0 .657.124.857.37.2.247.3.574.3.97 0 .397-.1.724-.3.97-.2.246-.485.37-.857.37z" />
-                            <path d="M22.67 6.33c-.246 0-.456.082-.63.246-.174.164-.26.37-.26.62 0 .25.086.456.26.62.174.164.384.246.63.246.246 0 .456-.082.63-.246.174-.164.26-.37.26-.62 0-.25-.086-.456-.26-.62-.174-.164-.384-.246-.63-.246z" />
-                          </svg>
-                          Continue with Shopify
                         </Button>
                       )}
                     </div>
@@ -351,8 +292,12 @@ export default function LoginPage() {
                       required
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Creating account..." : "Create Account"}
+                  <Button
+                    isLoading={isLoading}
+                    type="submit"
+                    className="w-full"
+                  >
+                    Create Account
                   </Button>
                 </form>
               </CardContent>

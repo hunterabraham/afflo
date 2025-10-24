@@ -1,4 +1,3 @@
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -6,12 +5,7 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 import { db } from "~/server/db";
-import {
-  accounts,
-  sessions,
-  users,
-  verificationTokens,
-} from "~/server/db/schema";
+import { users } from "~/server/db/schema";
 import { env } from "~/env";
 
 /**
@@ -41,6 +35,10 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
+  secret: env.AUTH_SECRET,
+  session: {
+    strategy: "jwt", // Use JWT sessions
+  },
   providers: [
     // Only add Google provider if credentials are available
     ...(env.AUTH_GOOGLE_ID && env.AUTH_GOOGLE_SECRET
@@ -92,18 +90,15 @@ export const authConfig = {
       },
     }),
   ],
-  adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-  }),
+  // No adapter needed for JWT sessions
   callbacks: {
-    session: ({ session, user }) => ({
+    session: ({ session, token }) => ({
       ...session,
       user: {
         ...session.user,
-        id: user.id,
+        id: token.id as string,
+        email: token.email as string,
+        name: token.name as string,
       },
     }),
     async signIn({ user, account, profile }) {
@@ -131,8 +126,11 @@ export const authConfig = {
       return false;
     },
     async jwt({ token, user, account }) {
+      // Persist the user data to the token right after signin
       if (user) {
         token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
       }
       return token;
     },

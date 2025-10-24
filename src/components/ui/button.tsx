@@ -74,6 +74,22 @@ function Button({
   }) {
   const Comp = asChild ? Slot : "button";
 
+  // When asChild is true and isLoading is true, we can't use Slot because
+  // Slot expects exactly one child, but we need to render both Spinner and children
+  if (asChild && isLoading) {
+    return (
+      <button
+        data-slot="button"
+        className={cn(buttonVariants({ variant, size, className }))}
+        {...props}
+        disabled={isLoading || props.disabled}
+      >
+        <Spinner />
+        {children}
+      </button>
+    );
+  }
+
   return (
     <Comp
       data-slot="button"
