@@ -12,15 +12,14 @@ const router = Router();
 router.use(loadPartner);
 router.use(requireAuth);
 
-const createAffiliateSchema = z.object({
+export const createAffiliateSchema = z.object({
   user_id: z.string().min(1),
 });
 
-const getByIdSchema = z.object({
+export const getByIdSchema = z.object({
   id: z.string(),
 });
 
-// POST /api/affiliate
 router.post("/", async (req: ExpressRequest, res, next) => {
   try {
     const input = createAffiliateSchema.parse(req.body);
@@ -40,7 +39,6 @@ router.post("/", async (req: ExpressRequest, res, next) => {
   }
 });
 
-// GET /api/affiliate/:id
 router.get("/:id", async (req: ExpressRequest, res, next) => {
   try {
     const input = getByIdSchema.parse({ id: req.params.id });

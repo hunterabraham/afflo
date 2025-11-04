@@ -11,11 +11,10 @@ const router = Router();
 router.use(loadPartner);
 router.use(requireAuth);
 
-const getByUserIdSchema = z.object({
+export const getByUserIdSchema = z.object({
   user_id: z.string().min(1),
 });
 
-// GET /api/admin/user/:user_id
 router.get("/user/:user_id", async (req: ExpressRequest, res, next) => {
   try {
     const input = getByUserIdSchema.parse({ user_id: req.params.user_id });

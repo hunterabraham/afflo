@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/ui/components/ui/card";
-import SettingsCard from "~/ui/_components/settings/settings-card";
+import SettingsCard from "~/ui/components/settings/settings-card";
 
 export default function SettingsPage() {
   const { data: session } = useSession();

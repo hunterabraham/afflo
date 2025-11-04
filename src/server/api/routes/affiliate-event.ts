@@ -16,17 +16,16 @@ const router = Router();
 // Apply middleware to all routes
 router.use(loadPartner);
 
-const createAffiliateEventSchema = z.object({
+export const createAffiliateEventSchema = z.object({
   type: z.string().min(1),
   data: z.any(),
   affiliate_id: z.string().min(1),
 });
 
-const getByIdSchema = z.object({
+export const getByIdSchema = z.object({
   id: z.string(),
 });
 
-// POST /api/affiliate-event
 router.post(
   "/",
   requireAuth,
@@ -54,7 +53,6 @@ router.post(
   },
 );
 
-// GET /api/affiliate-event/:id
 router.get("/:id", requireAuth, async (req: ExpressRequest, res, next) => {
   try {
     const input = getByIdSchema.parse({ id: req.params.id });
@@ -72,7 +70,6 @@ router.get("/:id", requireAuth, async (req: ExpressRequest, res, next) => {
   }
 });
 
-// GET /api/affiliate-event
 router.get(
   "/",
   requireAuth,

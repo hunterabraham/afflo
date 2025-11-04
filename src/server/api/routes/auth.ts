@@ -63,19 +63,18 @@ router.all("/session", handleNextAuth);
 router.all("/csrf", handleNextAuth);
 router.all("/providers", handleNextAuth);
 
-const signupSchema = z.object({
+export const signupSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-const setupCompanySchema = z.object({
+export const setupCompanySchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
   domain: z.string().min(1, "Domain is required"),
   shopifySecret: z.string().optional(),
 });
 
-// POST /api/auth/signup
 router.post("/signup", async (req: Request, res: Response, next) => {
   try {
     const { name, email, password } = signupSchema.parse(req.body);
@@ -113,7 +112,6 @@ router.post("/signup", async (req: Request, res: Response, next) => {
   }
 });
 
-// POST /api/auth/setup-company
 router.post(
   "/setup-company",
   loadPartner,

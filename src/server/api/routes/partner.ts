@@ -12,17 +12,16 @@ const router = Router();
 router.use(loadPartner);
 router.use(requireAuth);
 
-const createPartnerSchema = z.object({
+export const createPartnerSchema = z.object({
   name: z.string().min(1),
   domain: z.string().min(1),
   shopify_secret: z.string().min(1),
 });
 
-const getByIdSchema = z.object({
+export const getByIdSchema = z.object({
   id: z.string(),
 });
 
-// POST /api/partner
 router.post("/", async (req: ExpressRequest, res, next) => {
   try {
     const input = createPartnerSchema.parse(req.body);
@@ -44,7 +43,6 @@ router.post("/", async (req: ExpressRequest, res, next) => {
   }
 });
 
-// GET /api/partner/:id
 router.get("/:id", async (req: ExpressRequest, res, next) => {
   try {
     const input = getByIdSchema.parse({ id: req.params.id });
@@ -62,7 +60,6 @@ router.get("/:id", async (req: ExpressRequest, res, next) => {
   }
 });
 
-// GET /api/partner
 router.get("/", async (req: ExpressRequest, res, next) => {
   try {
     // Partner is automatically loaded in context for authenticated users

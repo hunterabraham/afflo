@@ -99,7 +99,7 @@ import {
   TableRow,
 } from "~/ui/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/ui/components/ui/tabs";
-import { api } from "~/ui/trpc/react";
+import { AffiliateEventService, CancelablePromise } from "../api";
 
 export const schema = z.object({
   id: z.number(),
@@ -331,14 +331,8 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
   );
 }
 
-export function DataTable({
-  data: initialData,
-}: {
-  data: z.infer<typeof schema>[];
-}) {
-  const { data: affiliateData } = api.affiliateEvent.get.useQuery();
-  console.log(affiliateData);
-  const [data, setData] = React.useState(() => initialData);
+export function DataTable() {
+  const { data: affiliateData } = useQuery(AffiliateEventService.getApiAffiliateEvent());
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -350,20 +344,14 @@ export function DataTable({
     pageIndex: 0,
     pageSize: 10,
   });
-  const sortableId = React.useId();
-  const sensors = useSensors(
-    useSensor(MouseSensor, {}),
-    useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {}),
-  );
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => data?.map(({ id }) => id) || [],
-    [data],
+    () => affiliateData?.map(({ id }) => id) || [],
+    [affiliateData],
   );
 
   const table = useReactTable({
-    data,
+    data: affiliateData,
     columns,
     state: {
       sorting,
@@ -386,17 +374,6 @@ export function DataTable({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (active && over && active.id !== over.id) {
-      setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id);
-        const newIndex = dataIds.indexOf(over.id);
-        return arrayMove(data, oldIndex, newIndex);
-      });
-    }
-  }
 
   return (
     <Tabs
@@ -477,13 +454,6 @@ export function DataTable({
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
         <div className="overflow-hidden rounded-lg border">
-          <DndContext
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            onDragEnd={handleDragEnd}
-            sensors={sensors}
-            id={sortableId}
-          >
             <Table>
               <TableHeader className="bg-muted sticky top-0 z-10">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -525,7 +495,6 @@ export function DataTable({
                 )}
               </TableBody>
             </Table>
-          </DndContext>
         </div>
         <div className="flex items-center justify-between px-4">
           <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
@@ -802,3 +771,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
     </Drawer>
   );
 }
+function useQuery(arg0: CancelablePromise<any[]>): { data: any; } {
+  throw new Error("Function not implemented.");
+}
+

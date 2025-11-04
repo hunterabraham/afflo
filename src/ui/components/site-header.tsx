@@ -1,10 +1,10 @@
 import { Separator } from "~/ui/components/ui/separator";
 import { SidebarTrigger } from "~/ui/components/ui/sidebar";
-import { api } from "~/ui/trpc/react";
 import { Skeleton } from "~/ui/components/ui/skeleton";
+import { CancelablePromise, PartnerService } from "../api";
 
 export function SiteHeader() {
-  const { data: partner, isLoading } = api.partner.get.useQuery();
+  const { data: partner, isLoading } = useQuery(PartnerService.getApiPartner());
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -23,3 +23,7 @@ export function SiteHeader() {
     </header>
   );
 }
+function useQuery(arg0: CancelablePromise<any>): { data: any; isLoading: any; } {
+  throw new Error("Function not implemented.");
+}
+
