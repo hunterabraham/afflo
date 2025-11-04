@@ -51,7 +51,7 @@ NODE_ENV="development"
 3. Enable Google+ API
 4. Create OAuth 2.0 credentials
 5. Add authorized redirect URIs:
-   - `http://localhost:3000/api/auth/callback/google` (development)
+   - `http://localhost:8080/api/auth/callback/google` (development)
    - `https://yourdomain.com/api/auth/callback/google` (production)
 
 ### Shopify OAuth
@@ -59,7 +59,7 @@ NODE_ENV="development"
 1. Create a Shopify app in your partner dashboard
 2. Configure OAuth settings
 3. Add redirect URIs:
-   - `http://localhost:3000/api/auth/callback/shopify` (development)
+   - `http://localhost:8080/api/auth/callback/shopify` (development)
    - `https://yourdomain.com/api/auth/callback/shopify` (production)
 
 ## Database Schema

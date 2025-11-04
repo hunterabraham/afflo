@@ -34,8 +34,31 @@ declare module "next-auth" {
  *
  * @see https://next-auth.js.org/configuration/options
  */
+// Generate a fallback secret for development if AUTH_SECRET is not provided
+const getAuthSecret = () => {
+  if (env.AUTH_SECRET) {
+    return env.AUTH_SECRET;
+  }
+
+  if (env.NODE_ENV === "development") {
+    // Use a default secret for development (not secure, but allows the app to run)
+    const fallbackSecret = "dev-secret-change-in-production-" + Date.now();
+    console.warn(
+      "⚠️  WARNING: AUTH_SECRET is not set. Using a fallback secret for development.",
+    );
+    console.warn(
+      "⚠️  This is NOT secure for production. Please set AUTH_SECRET in your environment.",
+    );
+    return fallbackSecret;
+  }
+
+  throw new Error(
+    "AUTH_SECRET is required in production. Please set it in your environment variables.",
+  );
+};
+
 export const authConfig = {
-  secret: env.AUTH_SECRET,
+  secret: getAuthSecret(),
   session: {
     strategy: "jwt", // Use JWT sessions
   },

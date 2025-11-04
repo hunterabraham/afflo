@@ -13,12 +13,37 @@ const router = Router();
 
 // NextAuth handlers - convert Express req/res to Next.js format
 // This needs to be before the other routes
-async function handleNextAuth(req: Request, res: Response) {
+async function handleNextAuth(
+  req: Request,
+  res: Response,
+  next: (error?: any) => void,
+) {
   try {
+    console.log(`[NextAuth] Handling ${req.method} ${req.path}`);
+    console.log(`[NextAuth] Original URL: ${req.url}`);
+    console.log(`[NextAuth] Host: ${req.get("host")}`);
+    console.log(`[NextAuth] Protocol: ${req.protocol}`);
+
     // Convert Express request to Next.js format for NextAuth
+    // NextAuth expects the full URL including the API prefix
     const protocol = req.protocol || (req.secure ? "https" : "http");
-    const host = req.get("host") || "localhost:3000";
-    const url = new URL(req.url, `${protocol}://${host}`);
+    const host = req.get("host") || "localhost:8080"; // Use server port, not frontend port
+    const baseUrl = `${protocol}://${host}`;
+
+    // Construct the full URL - NextAuth routes need the full path
+    const fullUrl = req.url.startsWith("/")
+      ? `${baseUrl}${req.url}`
+      : `${baseUrl}/${req.url}`;
+
+    console.log(`[NextAuth] Constructed URL: ${fullUrl}`);
+
+    let url: URL;
+    try {
+      url = new URL(fullUrl);
+    } catch (urlError) {
+      console.error("[NextAuth] URL construction error:", urlError);
+      throw new Error(`Failed to construct URL: ${fullUrl} - ${urlError}`);
+    }
 
     // Create a proper Request object
     const headers = new Headers();
@@ -31,6 +56,7 @@ async function handleNextAuth(req: Request, res: Response) {
     let body: string | undefined;
     if (req.method !== "GET" && req.method !== "HEAD" && req.body) {
       body = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
+      console.log(`[NextAuth] Request body length: ${body.length}`);
     }
 
     const nextReq = new NextRequest(url, {
@@ -39,8 +65,22 @@ async function handleNextAuth(req: Request, res: Response) {
       body,
     });
 
+    console.log(
+      `[NextAuth] NextRequest created: ${nextReq.method} ${nextReq.url}`,
+    );
+
     const handler = req.method === "GET" ? handlers.GET : handlers.POST;
+    if (!handler) {
+      throw new Error(`No handler found for method ${req.method}`);
+    }
+
+    console.log(`[NextAuth] Calling handler for ${req.method} ${req.path}`);
     const nextRes = await handler(nextReq);
+    console.log(`[NextAuth] Handler returned status ${nextRes.status}`);
+    console.log(
+      `[NextAuth] Response headers:`,
+      Object.fromEntries(nextRes.headers.entries()),
+    );
 
     // Convert Next.js response to Express
     res.status(nextRes.status);
@@ -48,10 +88,27 @@ async function handleNextAuth(req: Request, res: Response) {
       res.setHeader(key, value);
     });
     const text = await nextRes.text();
+    console.log(`[NextAuth] Response body length: ${text.length}`);
     res.send(text);
   } catch (error) {
-    console.error("NextAuth handler error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("=".repeat(80));
+    console.error("[NextAuth] Handler error:", new Date().toISOString());
+    console.error("Method:", req.method);
+    console.error("Path:", req.path);
+    console.error("URL:", req.url);
+    console.error("Headers:", req.headers);
+    console.error("Error:", error);
+    if (error instanceof Error) {
+      console.error("Error Name:", error.name);
+      console.error("Error Message:", error.message);
+      console.error("Error Stack:", error.stack);
+      if (error.cause) {
+        console.error("Error Cause:", error.cause);
+      }
+    }
+    console.error("=".repeat(80));
+    // Pass to error handler middleware
+    next(error);
   }
 }
 

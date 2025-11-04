@@ -22,25 +22,32 @@ services:
 
   # Database Migrations (runs db:push to sync schema)
   migrate:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: deps
+    image: node:20-alpine
     container_name: afflo-migrate
     working_dir: /app
     environment:
       DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-postgres}@database:5432/${DB_NAME:-afflo}
       SKIP_ENV_VALIDATION: 1
     volumes:
-      - ./src:/app/src:ro
-      - ./drizzle.config.ts:/app/drizzle.config.ts:ro
-      - ./package.json:/app/package.json:ro
-    command: npm run db:push
+      - .:/app
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...';
+        apk add --no-cache postgresql-client;
+        until pg_isready -h database -U postgres; do
+          sleep 1;
+        done;
+        echo 'Database is ready. Installing dependencies...';
+        npm ci;
+        echo 'Running database migrations...';
+        npm run db:push;
+        echo 'Migrations completed!';
+      "
     depends_on:
       database:
         condition: service_healthy
 
-  # Database Seeder (run with: docker-compose up seed)
+  # Database Seeder (runs seed.sql after migrations)
   seed:
     image: postgres:16-alpine
     container_name: afflo-seed
@@ -58,7 +65,12 @@ services:
         until pg_isready -h database -U postgres; do
           sleep 1;
         done;
-        echo 'Database is ready. Running seed script...';
+        echo 'Waiting for migrations to complete...';
+        while docker ps | grep -q afflo-migrate; do
+          sleep 1;
+        done;
+        sleep 2;
+        echo 'Running seed script...';
         psql -f /seed.sql;
         echo 'Seed script completed!';
       "
@@ -67,34 +79,6 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
-
-  # Next.js Application with tRPC
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: afflo-app
-    restart: unless-stopped
-    ports:
-      - "${APP_PORT:-3000}:3000"
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-postgres}@database:5432/${DB_NAME:-afflo}
-      AUTH_SECRET: ${AUTH_SECRET}
-      AUTH_DISCORD_ID: ${AUTH_DISCORD_ID}
-      AUTH_DISCORD_SECRET: ${AUTH_DISCORD_SECRET}
-    depends_on:
-      database:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 volumes:
   postgres_data:

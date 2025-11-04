@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  # Node Server
+  server:
+    image: node:20-alpine
+    container_name: afflo-server
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@host.docker.internal:5432/afflo}
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID}
+      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET}
+      AUTH_SHOPIFY_ID: ${AUTH_SHOPIFY_ID}
+      AUTH_SHOPIFY_SECRET: ${AUTH_SHOPIFY_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      SKIP_ENV_VALIDATION: 1
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: >
+      sh -c "
+        echo 'Installing dependencies...';
+        npm ci;
+        echo 'Starting server...';
+        npm run server:dev;
+      "
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service"
+        tag: "{{.Name}}/{{.ID}}"

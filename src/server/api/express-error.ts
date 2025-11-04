@@ -55,8 +55,25 @@ export function errorHandler(
   res: Response,
   next: NextFunction,
 ) {
-  // Log error
-  console.error("Error:", error);
+  // Log detailed error information
+  console.error("=".repeat(80));
+  console.error("ERROR HANDLER:", new Date().toISOString());
+  console.error("Method:", req.method);
+  console.error("Path:", req.path);
+  console.error("URL:", req.url);
+  console.error("Error Name:", error.name);
+  console.error("Error Message:", error.message);
+  console.error("Error Stack:", error.stack);
+  if (error.cause) {
+    console.error("Error Cause:", error.cause);
+  }
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.error("Request Body:", JSON.stringify(req.body, null, 2));
+  }
+  if (req.query && Object.keys(req.query).length > 0) {
+    console.error("Request Query:", JSON.stringify(req.query, null, 2));
+  }
+  console.error("=".repeat(80));
 
   // Handle Zod validation errors
   if (error instanceof ZodError) {

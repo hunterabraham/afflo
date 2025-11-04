@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { AuthService } from "~/ui/api";
 import { Button } from "~/ui/components/ui/button";
 import {
   Card,
@@ -84,19 +85,10 @@ export default function LoginPage() {
       const email = formData.get("email") as string;
       const password = formData.get("password") as string;
 
-      // Create user account
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, password }),
+      // Create user account using the API service (which uses the correct base URL)
+      await AuthService.postApiAuthSignup({
+        requestBody: { name, email, password },
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create account");
-      }
 
       // Sign in the user
       const result = await signIn("credentials", {
@@ -115,9 +107,19 @@ export default function LoginPage() {
         navigate("/auth/setup-company");
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create account",
-      );
+      let errorMessage = "Failed to create account";
+
+      if (error instanceof Error) {
+        // Check if it's an ApiError with a body containing error details
+        if ("body" in error && error.body && typeof error.body === "object") {
+          const apiError = error.body as { message?: string; error?: string };
+          errorMessage = apiError.message || apiError.error || error.message;
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      toast.error(errorMessage);
       setIsLoading(false);
     }
   };
