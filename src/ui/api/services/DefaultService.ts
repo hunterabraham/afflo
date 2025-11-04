@@ -2,21 +2,21 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { CancelablePromise } from "../core/CancelablePromise";
-import { OpenAPI } from "../core/OpenAPI";
-import { request as __request } from "../core/request";
+import type { CancelablePromise } from '../core/CancelablePromise';
+import { OpenAPI } from '../core/OpenAPI';
+import { request as __request } from '../core/request';
 export class DefaultService {
-  /**
-   * Health check endpoint
-   * @returns any Server is healthy
-   * @throws ApiError
-   */
-  public static getHealth(): CancelablePromise<{
-    status: string;
-  }> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/health",
-    });
-  }
+    /**
+     * Health check endpoint
+     * @returns any Server is healthy
+     * @throws ApiError
+     */
+    public static getHealth(): CancelablePromise<{
+        status: string;
+    }> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/health',
+        });
+    }
 }
