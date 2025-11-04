@@ -15,6 +15,8 @@ export default defineConfig({
     // Define process.env for libraries that expect it (like next-auth)
     "process.env": JSON.stringify({
       NODE_ENV: process.env.NODE_ENV || "development",
+      NEXTAUTH_URL:
+        process.env.NEXTAUTH_URL || "http://localhost:8080/api/auth",
       // Add any other process.env vars that need to be available in the browser
       // Note: Only expose variables that are safe for client-side code
     }),
