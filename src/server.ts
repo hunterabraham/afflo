@@ -3,11 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { env } from "~/env";
 import { errorHandler } from "~/server/api/express-error";
-import partnerRoutes from "~/server/api/routes/partner";
-import affiliateRoutes from "~/server/api/routes/affiliate";
-import affiliateEventRoutes from "~/server/api/routes/affiliate-event";
-import adminRoutes from "~/server/api/routes/admin";
-import authRoutes from "~/server/api/routes/auth";
+import apiRoutes from "~/server/api";
 import { timingMiddleware, loadSession } from "~/server/api/middleware";
 
 const app = express();
@@ -30,12 +26,8 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// API Routes
-app.use("/api/partner", partnerRoutes);
-app.use("/api/affiliate", affiliateRoutes);
-app.use("/api/affiliate-event", affiliateEventRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/auth", authRoutes);
+// API Routes - all routes grouped in api/index.ts
+app.use("/api", apiRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

@@ -7,9 +7,7 @@ import { db } from "~/server/db";
 
 const router = Router();
 
-// Apply middleware to all routes
-router.use(loadPartner);
-router.use(requireAuth);
+// Note: loadPartner and requireAuth are applied globally in api/index.ts
 
 export const getByUserIdSchema = z.object({
   user_id: z.string().min(1),

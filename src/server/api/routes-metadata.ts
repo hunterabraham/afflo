@@ -164,7 +164,7 @@ export function registerAllRoutes() {
     responses: {
       200: {
         schema: z.object({
-          affiliate_event: z.any(),
+          affiliate_events: z.array(z.any()),
           success: z.boolean(),
         }),
         description: "Affiliate event created successfully",

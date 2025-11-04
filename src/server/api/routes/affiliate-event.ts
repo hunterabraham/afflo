@@ -13,8 +13,8 @@ import { db } from "~/server/db";
 
 const router = Router();
 
-// Apply middleware to all routes
-router.use(loadPartner);
+// Note: loadPartner and requireAuth are applied globally in api/index.ts
+// requirePartner is applied per-route where needed
 
 export const createAffiliateEventSchema = z.object({
   type: z.string().min(1),

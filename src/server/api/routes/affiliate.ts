@@ -8,9 +8,6 @@ import { db } from "~/server/db";
 
 const router = Router();
 
-// Apply middleware to all routes
-router.use(loadPartner);
-router.use(requireAuth);
 
 export const createAffiliateSchema = z.object({
   user_id: z.string().min(1),
