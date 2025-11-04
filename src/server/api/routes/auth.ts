@@ -21,6 +21,7 @@ async function handleNextAuth(
   try {
     console.log(`[NextAuth] Handling ${req.method} ${req.path}`);
     console.log(`[NextAuth] Original URL: ${req.url}`);
+    console.log(`[NextAuth] Original path: ${req.path}`);
     console.log(`[NextAuth] Host: ${req.get("host")}`);
     console.log(`[NextAuth] Protocol: ${req.protocol}`);
 
@@ -30,19 +31,31 @@ async function handleNextAuth(
     const host = req.get("host") || "localhost:8080"; // Use server port, not frontend port
     const baseUrl = `${protocol}://${host}`;
 
-    // Construct the full URL - NextAuth routes need the full path
-    const fullUrl = req.url.startsWith("/")
-      ? `${baseUrl}${req.url}`
-      : `${baseUrl}/${req.url}`;
+    // Construct the full URL - NextAuth routes need the full path including /api/auth
+    // req.url is the full URL path (e.g., /api/auth/session or /session)
+    // We need to ensure it includes /api/auth prefix
+    let fullPath = req.url.startsWith("/") ? req.url : `/${req.url}`;
 
-    console.log(`[NextAuth] Constructed URL: ${fullUrl}`);
+    // If the path doesn't start with /api/auth, add it
+    // This handles cases where req.url might be /session instead of /api/auth/session
+    if (!fullPath.startsWith("/api/auth")) {
+      // Remove leading /api/auth if it's already there from req.url, then add it
+      const pathWithoutApi = fullPath.replace(/^\/api\/auth/, "");
+      fullPath = `/api/auth${pathWithoutApi}`;
+    }
+
+    const fullUrlWithApi = `${baseUrl}${fullPath}`;
+
+    console.log(`[NextAuth] Constructed URL: ${fullUrlWithApi}`);
 
     let url: URL;
     try {
-      url = new URL(fullUrl);
+      url = new URL(fullUrlWithApi);
     } catch (urlError) {
       console.error("[NextAuth] URL construction error:", urlError);
-      throw new Error(`Failed to construct URL: ${fullUrl} - ${urlError}`);
+      throw new Error(
+        `Failed to construct URL: ${fullUrlWithApi} - ${urlError}`,
+      );
     }
 
     // Create a proper Request object
