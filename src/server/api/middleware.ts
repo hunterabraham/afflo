@@ -66,8 +66,6 @@ export async function loadPartner(
   next();
 }
 
-const BYPASSED_ROUTES = ["/auth"];
-
 /**
  * Middleware to require authentication
  */
@@ -76,9 +74,6 @@ export function requireAuth(
   res: Response,
   next: NextFunction,
 ) {
-  if (!!BYPASSED_ROUTES.find((route) => req.path.startsWith(route))) {
-    return next();
-  }
   if (!req.session?.user) {
     throw new UnauthorizedError();
   }

@@ -4,7 +4,6 @@ import partnerRoutes from "./routes/partner";
 import affiliateRoutes from "./routes/affiliate";
 import affiliateEventRoutes from "./routes/affiliate-event";
 import adminRoutes from "./routes/admin";
-import { loadPartner, requireAuth } from "./middleware";
 
 /**
  * Main API router that groups all sub-routes
@@ -17,9 +16,6 @@ import { loadPartner, requireAuth } from "./middleware";
  * - requireAuth: Required for all routes except /auth (which handles authentication)
  */
 const router = Router();
-
-router.use(loadPartner);
-router.use(requireAuth);
 
 router.use("/auth", authRoutes);
 router.use("/partner", partnerRoutes);

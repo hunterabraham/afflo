@@ -1,4 +1,8 @@
+import { config } from "dotenv";
 import { z } from "zod";
+
+// Load .env file from project root
+config();
 
 const envSchema = z.object({
   AUTH_SECRET:
@@ -7,7 +11,7 @@ const envSchema = z.object({
   AUTH_GOOGLE_SECRET: z.string().optional(),
   AUTH_SHOPIFY_ID: z.string().optional(),
   AUTH_SHOPIFY_SECRET: z.string().optional(),
-  DATABASE_URL: z.string().url().optional(),
+  DATABASE_URL: z.string().url(),
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),

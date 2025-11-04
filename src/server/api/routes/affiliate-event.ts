@@ -10,6 +10,7 @@ import {
   loadPartner,
 } from "../middleware";
 import { db } from "~/server/db";
+import { fetchAffiliateEvents } from "~/server/helpers/affiliate-event-helpers";
 
 const router = Router();
 
@@ -76,14 +77,8 @@ router.get(
   requirePartner,
   async (req: ExpressRequest, res, next) => {
     try {
-      const events = await db.query.affiliate_events.findMany({
-        where: eq(affiliate_events.partner_id, req.partner!.id),
-        with: {
-          affiliate: true,
-        },
-      });
-
-      res.json(events ?? null);
+      const events = await fetchAffiliateEvents(req.partner!.id);
+      res.json(events);
     } catch (error) {
       next(error);
     }
