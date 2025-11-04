@@ -10,35 +10,35 @@ import ProtectedRoute from "~/ui/components/ProtectedRoute";
 function App() {
   return (
     <Providers>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/auth/login" element={<LoginPage />} />
-          <Route
-            path="/auth/setup-company"
-            element={
-              <ProtectedRoute>
-                <SetupCompanyPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/settings"
-            element={
-              <ProtectedRoute>
-                <SettingsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route
+          path="/auth/setup-company"
+          element={
+            <ProtectedRoute>
+              <SetupCompanyPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </Providers>
   );
 }

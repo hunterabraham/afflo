@@ -8,7 +8,6 @@ import { db } from "~/server/db";
 
 const router = Router();
 
-
 export const createAffiliateSchema = z.object({
   user_id: z.string().min(1),
 });

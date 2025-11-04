@@ -3,9 +3,15 @@ import { createRoute, generateOpenAPISpec } from "./openapi-registry.js";
 
 // Import schemas from route files
 import { signupSchema, setupCompanySchema } from "./routes/auth.js";
-import { createPartnerSchema, getByIdSchema as partnerGetByIdSchema } from "./routes/partner.js";
+import {
+  createPartnerSchema,
+  getByIdSchema as partnerGetByIdSchema,
+} from "./routes/partner.js";
 import { createAffiliateSchema } from "./routes/affiliate.js";
-import { createAffiliateEventSchema, getByIdSchema as affiliateEventGetByIdSchema } from "./routes/affiliate-event.js";
+import {
+  createAffiliateEventSchema,
+  getByIdSchema as affiliateEventGetByIdSchema,
+} from "./routes/affiliate-event.js";
 import { getByUserIdSchema } from "./routes/admin.js";
 
 /**
@@ -235,4 +241,3 @@ export function registerAllRoutes() {
 }
 
 export { generateOpenAPISpec };
-

@@ -41,7 +41,7 @@ export function createRoute(
       };
     };
     security?: boolean;
-  }
+  },
 ) {
   routes.push({
     path,
@@ -58,7 +58,7 @@ export function generateOpenAPISpec() {
 
   for (const route of routes) {
     const pathKey = route.path.replace(/{([^}]+)}/g, "{$1}");
-    
+
     if (!paths[pathKey]) {
       paths[pathKey] = {};
     }
@@ -88,7 +88,9 @@ export function generateOpenAPISpec() {
 
     // Add parameters
     if (route.params) {
-      const paramSchema = zodToJsonSchema(route.params, { target: "openApi3" }) as any;
+      const paramSchema = zodToJsonSchema(route.params, {
+        target: "openApi3",
+      }) as any;
       const properties = paramSchema.properties || {};
       pathItem.parameters = Object.keys(properties).map((key) => ({
         name: key,
@@ -100,7 +102,9 @@ export function generateOpenAPISpec() {
     }
 
     if (route.query) {
-      const querySchema = zodToJsonSchema(route.query, { target: "openApi3" }) as any;
+      const querySchema = zodToJsonSchema(route.query, {
+        target: "openApi3",
+      }) as any;
       const properties = querySchema.properties || {};
       const required = querySchema.required || [];
       const queryParams = Object.keys(properties).map((key) => ({

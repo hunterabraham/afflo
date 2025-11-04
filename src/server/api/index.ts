@@ -8,16 +8,15 @@ import { loadPartner, requireAuth } from "./middleware";
 
 /**
  * Main API router that groups all sub-routes
- * 
+ *
  * This router serves as the central entry point for all API routes.
  * Each sub-route is mounted at its respective path prefix.
- * 
+ *
  * Middleware is applied globally:
  * - loadPartner: Loads partner info for authenticated users (safe to apply to all routes)
  * - requireAuth: Required for all routes except /auth (which handles authentication)
  */
 const router = Router();
-
 
 router.use(loadPartner);
 router.use(requireAuth);

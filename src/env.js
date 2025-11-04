@@ -2,9 +2,7 @@ import { z } from "zod";
 
 const envSchema = z.object({
   AUTH_SECRET:
-    process.env.NODE_ENV === "production"
-      ? z.string()
-      : z.string().optional(),
+    process.env.NODE_ENV === "production" ? z.string() : z.string().optional(),
   AUTH_GOOGLE_ID: z.string().optional(),
   AUTH_GOOGLE_SECRET: z.string().optional(),
   AUTH_SHOPIFY_ID: z.string().optional(),
@@ -35,7 +33,10 @@ function validateEnv() {
   });
 
   if (!parsed.success) {
-    console.error("❌ Invalid environment variables:", parsed.error.flatten().fieldErrors);
+    console.error(
+      "❌ Invalid environment variables:",
+      parsed.error.flatten().fieldErrors,
+    );
     throw new Error("Invalid environment variables");
   }
 
