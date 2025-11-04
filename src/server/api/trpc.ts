@@ -10,9 +10,11 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
+import { eq } from "drizzle-orm";
 
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
+import { admins } from "~/server/db/schema";
 
 /**
  * 1. CONTEXT
@@ -29,9 +31,32 @@ import { db } from "~/server/db";
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await auth();
 
+  let partner = null;
+  if (session?.user?.id) {
+    console.log("EHREREREER");
+    console.log(session);
+    try {
+      const admin = await db.query.admins.findFirst({
+        where: eq(admins.user_id, session.user.id),
+        with: {
+          partner: true,
+        },
+      });
+
+      console.log("ADMIN", admin);
+      partner = admin?.partner ?? null;
+    } catch (error) {
+      console.error("Error fetching admin", error);
+      partner = null;
+    }
+  }
+
+  console.log("PARTNER", partner);
+
   return {
     db,
     session,
+    partner,
     ...opts,
   };
 };
@@ -46,14 +71,6 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
-    // Log errors to console
-    console.error(`[TRPC] Error in ${error.path}:`, {
-      message: error.message,
-      code: error.code,
-      cause: error.cause,
-      timestamp: new Date().toISOString(),
-    });
-
     return {
       ...shape,
       data: {
@@ -149,6 +166,32 @@ export const protectedProcedure = t.procedure
       ctx: {
         // infers the `session` as non-nullable
         session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
+
+/**
+ * Partner-required procedure
+ *
+ * Use this for queries/mutations that require the user to be an admin of a partner.
+ * It verifies the session is valid and ensures the user has an associated partner.
+ */
+export const partnerProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    if (!ctx.session?.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    if (!ctx.partner) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You must be an admin of a partner to access this resource",
+      });
+    }
+    return next({
+      ctx: {
+        session: { ...ctx.session, user: ctx.session.user },
+        partner: ctx.partner,
       },
     });
   });

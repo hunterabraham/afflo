@@ -42,4 +42,8 @@ export const partnerRouter = createTRPCRouter({
 
       return partner ?? null;
     }),
+  get: protectedProcedure.query(async ({ ctx }) => {
+    // Partner is automatically loaded in context for authenticated users
+    return ctx.partner;
+  }),
 });

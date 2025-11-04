@@ -13,8 +13,8 @@ export const env = createEnv({
         : z.string().optional(),
     AUTH_GOOGLE_ID: z.string().optional(),
     AUTH_GOOGLE_SECRET: z.string().optional(),
-    AUTH_SHOPIFY_ID: z.string().optional(),
-    AUTH_SHOPIFY_SECRET: z.string().optional(),
+    AUTH_SHOPIFY_ID: z.string(),
+    AUTH_SHOPIFY_SECRET: z.string(),
     DATABASE_URL: z.string().url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])

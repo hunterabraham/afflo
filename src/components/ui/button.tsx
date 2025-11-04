@@ -84,8 +84,10 @@ function Button({
         {...props}
         disabled={isLoading || props.disabled}
       >
-        <Spinner />
-        {children}
+        <>
+          <Spinner />
+          {children}
+        </>
       </button>
     );
   }
@@ -97,8 +99,10 @@ function Button({
       {...props}
       disabled={isLoading || props.disabled}
     >
-      {isLoading && <Spinner />}
-      {children}
+      <>
+        {isLoading && <Spinner />}
+        {children}
+      </>
     </Comp>
   );
 }

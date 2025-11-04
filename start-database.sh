@@ -81,3 +81,46 @@ $DOCKER_CMD run -d \
   -e POSTGRES_DB="$DB_NAME" \
   -p "$DB_PORT":5432 \
   docker.io/postgres && echo "Database container '$DB_CONTAINER_NAME' was successfully created"
+
+# Wait for database to be ready
+echo "Waiting for database to be ready..."
+if command -v nc >/dev/null 2>&1; then
+  # Wait for port to be open
+  retries=0
+  max_retries=30
+  while ! nc -z localhost "$DB_PORT" 2>/dev/null && [ $retries -lt $max_retries ]; do
+    sleep 1
+    retries=$((retries + 1))
+  done
+  if [ $retries -eq $max_retries ]; then
+    echo "Failed to connect to database after $max_retries seconds"
+    exit 1
+  fi
+  echo "Database is ready!"
+else
+  # Fallback: wait 5 seconds
+  echo "nc not available, waiting 5 seconds for database to start..."
+  sleep 5
+fi
+
+# Give the database a bit more time to initialize
+sleep 2
+
+# Push schema to create tables
+echo "Creating database tables..."
+npm run db:push
+
+if [ $? -eq 0 ]; then
+  echo "✅ Database tables created successfully!"
+else
+  echo "❌ Error creating database tables. Check the output above."
+  exit 1
+fi
+
+# Seed the database
+echo "Seeding database with initial data..."
+if [ -f "./seed-database.sh" ]; then
+  ./seed-database.sh
+else
+  echo "⚠️  seed-database.sh not found. Skipping data seeding."
+fi

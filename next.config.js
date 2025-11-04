@@ -10,13 +10,12 @@ const config = {
   experimental: {
     // Enable static optimization where possible
     optimizeCss: true,
-    // Improve build performance
-    turbo: {
-      rules: {
-        "*.svg": {
-          loaders: ["@svgr/webpack"],
-          as: "*.js",
-        },
+  },
+  turbopack: {
+    rules: {
+      "*.svg": {
+        loaders: ["@svgr/webpack"],
+        as: "*.js",
       },
     },
   },

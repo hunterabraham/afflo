@@ -1,18 +1,21 @@
 import { z } from "zod";
 
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  partnerProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
 import { affiliate_events } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 import { NotFoundError } from "~/server/api/error";
 
 export const affiliateEventRouter = createTRPCRouter({
-  create: protectedProcedure
+  create: partnerProcedure
     .input(
       z.object({
         type: z.string().min(1),
         data: z.any(),
         affiliate_id: z.string().min(1),
-        partner_id: z.string().min(1),
         // Add your input fields here
       }),
     )
@@ -23,7 +26,7 @@ export const affiliateEventRouter = createTRPCRouter({
           type: input.type,
           data: input.data,
           affiliate_id: input.affiliate_id,
-          partner_id: input.partner_id,
+          partner_id: ctx.partner.id,
           // Map your input fields here
         })
         .returning();
@@ -46,4 +49,14 @@ export const affiliateEventRouter = createTRPCRouter({
 
       return affiliate_event ?? null;
     }),
+  get: partnerProcedure.query(async ({ ctx }) => {
+    const events = await ctx.db.query.affiliate_events.findMany({
+      where: eq(affiliate_events.partner_id, ctx.partner.id),
+      with: {
+        affiliate: true,
+      },
+    });
+
+    return events ?? null;
+  }),
 });
