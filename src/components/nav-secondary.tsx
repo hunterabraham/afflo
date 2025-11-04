@@ -1,7 +1,5 @@
-"use client";
-
 import * as React from "react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { type Icon } from "@tabler/icons-react";
 
 import {
@@ -29,7 +27,7 @@ export function NavSecondary({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild>
-                <Link href={item.url}>
+                <Link to={item.url}>
                   <item.icon />
                   <span>{item.title}</span>
                 </Link>

@@ -1,5 +1,3 @@
-"use client";
-
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { httpBatchStreamLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
@@ -54,7 +52,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           url: getBaseUrl() + "/api/trpc",
           headers: () => {
             const headers = new Headers();
-            headers.set("x-trpc-source", "nextjs-react");
+            headers.set("x-trpc-source", "react");
             return headers;
           },
           fetch: (url, opts) => {
@@ -79,6 +77,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
 
 function getBaseUrl() {
   if (typeof window !== "undefined") return window.location.origin;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return `http://localhost:${process.env.PORT ?? 3000}`;
+  // In production, you might want to set VITE_API_URL or similar
+  // For SSR/backend, use the server URL (this won't be called in browser-only React app)
+  return import.meta.env?.VITE_API_URL || "http://localhost:3001";
 }

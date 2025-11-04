@@ -1,5 +1,5 @@
-import { auth } from "~/server/auth";
-import { redirect } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useNavigate } from "react-router-dom";
 import { AppSidebar } from "~/components/app-sidebar";
 import { ChartAreaInteractive } from "~/components/chart-area-interactive";
 import { DataTable } from "~/components/data-table";
@@ -7,29 +7,21 @@ import { SectionCards } from "~/components/section-cards";
 import { SiteHeader } from "~/components/site-header";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 import { Button } from "~/components/ui/button";
-import { signOut } from "~/server/auth";
-import { type Metadata } from "next";
-import data from "../data.json";
-import { api } from "~/trpc/react";
+import { signOut } from "next-auth/react";
+import data from "~/app/dashboard/data.json";
 import Page from "~/app/_components/page/page";
 
-export const metadata: Metadata = {
-  title: "Dashboard - Afflo",
-  description: "Your affiliate management dashboard",
-};
+export default function DashboardPage() {
+  const { data: session } = useSession();
+  const navigate = useNavigate();
 
-// Force Node.js runtime for database operations
-export const runtime = "nodejs";
-
-// This page will be dynamically rendered due to auth() usage
-export const dynamic = "force-dynamic";
-
-export default async function DashboardPage() {
-  const session = await auth();
+  const handleSignOut = async () => {
+    await signOut({ redirect: false });
+    navigate("/auth/login");
+  };
 
   if (!session) {
-    console.log("No session found, redirecting to login");
-    redirect("/auth/login");
+    return null; // ProtectedRoute will handle redirect
   }
 
   return (
@@ -49,16 +41,9 @@ export default async function DashboardPage() {
             title={`Welcome back, ${session.user?.name || session.user?.email}!`}
             description={`Manage your account settings and preferences`}
             rightButton={
-              <form
-                action={async () => {
-                  "use server";
-                  await signOut({ redirectTo: "/auth/login" });
-                }}
-              >
-                <Button variant="outline" type="submit">
-                  Sign Out
-                </Button>
-              </form>
+              <Button variant="outline" onClick={handleSignOut}>
+                Sign Out
+              </Button>
             }
           />
           <div className="flex flex-1 flex-col">

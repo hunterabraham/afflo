@@ -19,9 +19,8 @@
     "lib": ["dom", "dom.iterable", "ES2022"],
     "outDir": "./dist",
     "module": "ESNext",
-    "moduleResolution": "node",
-    "jsx": "preserve",
-    "plugins": [{ "name": "next" }],
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
     "incremental": true,
 
     /* Path Aliases */
@@ -32,7 +31,8 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.tsx"
+    "src/**/*.tsx",
+    "src/vite-env.d.ts"
   ],
   "exclude": ["node_modules"]
 }

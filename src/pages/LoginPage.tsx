@@ -1,8 +1,6 @@
-"use client";
-
 import { useState } from "react";
-import { signIn, getSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -19,7 +17,8 @@ import { toast } from "sonner";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // For now, we'll show OAuth buttons by default
   // In production, you'd want to check server-side or use a different approach
@@ -28,10 +27,18 @@ export default function LoginPage() {
   const handleOAuthSignIn = async (provider: string) => {
     setIsLoading(true);
     try {
-      await signIn(provider, {
+      const result = await signIn(provider, {
         callbackUrl: "/auth/setup-company",
-        redirect: true,
+        redirect: false,
       });
+
+      if (result?.error) {
+        toast.error("An error occurred during authentication.");
+        setIsLoading(false);
+      } else if (result?.ok) {
+        const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+        navigate(callbackUrl);
+      }
     } catch (error) {
       toast.error("An error occurred during authentication.");
       setIsLoading(false);
@@ -43,17 +50,24 @@ export default function LoginPage() {
     try {
       const email = formData.get("email") as string;
       const password = formData.get("password") as string;
-      // Use NextAuth's built-in redirect functionality
-      await signIn("credentials", {
+
+      const result = await signIn("credentials", {
         email,
         password,
         callbackUrl: "/dashboard",
-        redirect: true,
+        redirect: false,
       });
+
+      if (result?.error) {
+        toast.error("Invalid email or password.");
+        setIsLoading(false);
+      } else if (result?.ok) {
+        const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+        navigate(callbackUrl);
+      }
     } catch (error) {
       console.error("Sign in error:", error);
       toast.error("An error occurred during sign in.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -80,17 +94,25 @@ export default function LoginPage() {
       }
 
       // Sign in the user
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         email,
         password,
         callbackUrl: "/auth/setup-company",
-        redirect: true,
+        redirect: false,
       });
+
+      if (result?.error) {
+        toast.error(
+          "Account created but sign in failed. Please try signing in.",
+        );
+        navigate("/auth/login");
+      } else if (result?.ok) {
+        navigate("/auth/setup-company");
+      }
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to create account",
       );
-    } finally {
       setIsLoading(false);
     }
   };
@@ -170,7 +192,14 @@ export default function LoginPage() {
                 )}
 
                 {/* Credentials Form */}
-                <form action={handleCredentialsSignIn} className="space-y-4">
+                <form
+                  action={handleCredentialsSignIn}
+                  className="space-y-4"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleCredentialsSignIn(new FormData(e.currentTarget));
+                  }}
+                >
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -261,7 +290,14 @@ export default function LoginPage() {
                 )}
 
                 {/* Sign Up Form */}
-                <form action={handleCredentialsSignUp} className="space-y-4">
+                <form
+                  action={handleCredentialsSignUp}
+                  className="space-y-4"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleCredentialsSignUp(new FormData(e.currentTarget));
+                  }}
+                >
                   <div className="space-y-2">
                     <Label htmlFor="signup-name">Full Name</Label>
                     <Input

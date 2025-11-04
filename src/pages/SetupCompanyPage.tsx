@@ -1,8 +1,5 @@
-"use client";
-
 import { useState } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -16,25 +13,8 @@ import { Label } from "~/components/ui/label";
 import { toast } from "sonner";
 
 export default function SetupCompanyPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-
-  if (status === "loading") {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mx-auto h-32 w-32 animate-spin rounded-full border-b-2 border-gray-900"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (status === "unauthenticated") {
-    router.push("/auth/login");
-    return null;
-  }
 
   const handleCompanySetup = async (formData: FormData) => {
     setIsLoading(true);
@@ -61,7 +41,7 @@ export default function SetupCompanyPage() {
       }
 
       toast.success("Company setup completed successfully!");
-      router.push("/dashboard");
+      navigate("/dashboard");
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to setup company",
@@ -92,7 +72,14 @@ export default function SetupCompanyPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form action={handleCompanySetup} className="space-y-4">
+            <form
+              action={handleCompanySetup}
+              className="space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleCompanySetup(new FormData(e.currentTarget));
+              }}
+            >
               <div className="space-y-2">
                 <Label htmlFor="companyName">Company Name</Label>
                 <Input

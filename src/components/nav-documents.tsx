@@ -1,5 +1,3 @@
-"use client";
-
 import {
   IconDots,
   IconFolder,
@@ -24,6 +22,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar";
+import { Link } from "react-router-dom";
 
 export function NavDocuments({
   items,
@@ -43,10 +42,10 @@ export function NavDocuments({
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
+              <Link to={item.url}>
                 <item.icon />
                 <span>{item.name}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

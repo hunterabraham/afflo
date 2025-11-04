@@ -1,9 +1,7 @@
-import { auth } from "~/server/auth";
-import { redirect } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { AppSidebar } from "~/components/app-sidebar";
 import { SiteHeader } from "~/components/site-header";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
-import { type Metadata } from "next";
 import {
   Card,
   CardContent,
@@ -13,23 +11,11 @@ import {
 } from "~/components/ui/card";
 import SettingsCard from "~/app/_components/settings/settings-card";
 
-export const metadata: Metadata = {
-  title: "Settings - Afflo",
-  description: "Manage your account settings",
-};
-
-// Force Node.js runtime for database operations
-export const runtime = "nodejs";
-
-// This page will be dynamically rendered due to auth() usage
-export const dynamic = "force-dynamic";
-
-export default async function SettingsPage() {
-  const session = await auth();
+export default function SettingsPage() {
+  const { data: session } = useSession();
 
   if (!session) {
-    console.log("No session found, redirecting to login");
-    redirect("/auth/login");
+    return null; // ProtectedRoute will handle redirect
   }
 
   return (
