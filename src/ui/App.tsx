@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Providers } from "~/ui/components/providers";
-import { TRPCReactProvider } from "~/ui/trpc/react";
 import HomePage from "~/ui/pages/HomePage";
 import LoginPage from "~/ui/pages/LoginPage";
 import SetupCompanyPage from "~/ui/pages/SetupCompanyPage";
@@ -11,7 +10,6 @@ import ProtectedRoute from "~/ui/components/ProtectedRoute";
 function App() {
   return (
     <Providers>
-      <TRPCReactProvider>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/auth/login" element={<LoginPage />} />
@@ -41,7 +39,6 @@ function App() {
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </TRPCReactProvider>
     </Providers>
   );
 }

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { admins } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
-import { ExpressRequest, requireAuth, loadPartner } from "../middleware";
+import {type  ExpressRequest, requireAuth, loadPartner } from "../middleware";
 import { db } from "~/server/db";
 
 const router = Router();

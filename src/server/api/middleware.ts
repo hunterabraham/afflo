@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
+import type { Session } from "next-auth";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { admins } from "~/server/db/schema";
@@ -6,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { UnauthorizedError, ForbiddenError } from "./express-error";
 
 export interface ExpressRequest extends Request {
-  session?: Awaited<ReturnType<typeof auth>>;
+  session?: Session | null;
   partner?: any;
 }
 

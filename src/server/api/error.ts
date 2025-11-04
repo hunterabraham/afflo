@@ -1,37 +1,41 @@
-import { TRPCError } from "@trpc/server";
-
-export class NotFoundError extends TRPCError {
+export class NotFoundError extends Error {
   constructor(message: string = "Not found") {
-    super({ code: "NOT_FOUND", message });
+    super(message);
+    this.name = "NotFoundError";
   }
 }
 
-export class UnauthorizedError extends TRPCError {
+export class UnauthorizedError extends Error {
   constructor(message: string) {
-    super({ code: "UNAUTHORIZED", message });
+    super(message);
+    this.name = "UnauthorizedError";
   }
 }
 
-export class BadRequestError extends TRPCError {
+export class BadRequestError extends Error {
   constructor(message: string) {
-    super({ code: "BAD_REQUEST", message });
+    super(message);
+    this.name = "BadRequestError";
   }
 }
 
-export class InternalServerError extends TRPCError {
+export class InternalServerError extends Error {
   constructor(message: string) {
-    super({ code: "INTERNAL_SERVER_ERROR", message });
+    super(message);
+    this.name = "InternalServerError";
   }
 }
 
-export class ForbiddenError extends TRPCError {
+export class ForbiddenError extends Error {
   constructor(message: string) {
-    super({ code: "FORBIDDEN", message });
+    super(message);
+    this.name = "ForbiddenError";
   }
 }
 
-export class TooManyRequestsError extends TRPCError {
+export class TooManyRequestsError extends Error {
   constructor(message: string) {
-    super({ code: "TOO_MANY_REQUESTS", message });
+    super(message);
+    this.name = "TooManyRequestsError";
   }
 }

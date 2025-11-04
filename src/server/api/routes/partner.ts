@@ -3,7 +3,7 @@ import { z } from "zod";
 import { partners } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 import { NotFoundError } from "../express-error";
-import { ExpressRequest, requireAuth, loadPartner } from "../middleware";
+import { type ExpressRequest, requireAuth, loadPartner } from "../middleware";
 import { db } from "~/server/db";
 
 const router = Router();

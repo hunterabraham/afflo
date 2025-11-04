@@ -4,7 +4,7 @@ import { affiliate_events } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 import { NotFoundError } from "../express-error";
 import {
-  ExpressRequest,
+  type ExpressRequest,
   requireAuth,
   requirePartner,
   loadPartner,

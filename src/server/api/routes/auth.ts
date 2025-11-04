@@ -1,12 +1,13 @@
 import { Router } from "express";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { db } from "~/server/db";
 import { users, partners, admins } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
-import { ExpressRequest, requireAuth, loadPartner } from "../middleware";
+import { type ExpressRequest, requireAuth, loadPartner } from "../middleware";
 import { handlers } from "~/server/auth";
+import { NextRequest } from "next/server";
 
 const router = Router();
 
@@ -32,7 +33,7 @@ async function handleNextAuth(req: Request, res: Response) {
       body = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
     }
 
-    const nextReq = new Request(url, {
+    const nextReq = new NextRequest(url, {
       method: req.method,
       headers,
       body,
